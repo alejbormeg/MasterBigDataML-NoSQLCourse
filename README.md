@@ -175,6 +175,7 @@ A continuación, se presentan los ejercicios que explorarán las capacidades de 
    ![Query 5](./images/exercise5.png)
 
 6. **Actualizar los documentos cuyo actor (cast) tenga por error el valor “and” como si realmente fuera un actor. Para ello, se debe sacar únicamente ese valor del array cast. Por lo tanto, no se debe eliminar ni el documento (película) ni su array cast con el resto de actores.**
+
    La query de este ejercicio es la siguiente:
 
    ```Javascript
@@ -190,3 +191,66 @@ A continuación, se presentan los ejercicios que explorarán las capacidades de 
 
    ![Query 6](./images/exercise6.png)
 
+7. **Contar cuantos documentos (películas) tienen el array ‘cast’ vacío.**
+
+   La query de este ejercicio es la siguiente: 
+
+   ```Javascript
+   var query_exercise_7_1 = { "cast": { $exists: true } }
+   var query_exercise_7_2 = { "cast": { $size: 0 }}
+   var query_exercise_7 = { $and: [query_exercise_7_1, query_exercise_7_2]}
+   db.movies.count(query_exercise_7)
+   ```
+   Con esta query el resultado obtenido es de 986 documentos con el array vacío. Podemos ver el resultado en la siguiente captura:
+
+   ![Query 7](./images/exercise7.png)
+
+8. **Actualizar TODOS los documentos (películas) que tengan el array cast vacío, añadiendo un nuevo elemento dentro del array con valor Undefined. Cuidado! El tipo de cast debe seguir siendo un array. El array debe ser así -> ["Undefined" ].**
+
+   La query de este ejercicio es la siguiente: 
+
+   ```Javascript
+   var query_exercise_8_1 = { "cast": { $exists: true } }
+   var query_exercise_8_2 = { "cast": { $size: 0 }}
+   var query_exercise_8 = { $and: [query_exercise_8_1, query_exercise_8_2]}
+   var action = { $push: { "cast": "Undefined" } }
+   db.movies.updateMany(query_exercise_8, action)
+   db.movies.find({cast: "Undefined"})
+   ```
+   Con esta query el resultado obtenido es que se actualizan 986 documentos con el array vacío poniendo el valor "Undefined". Podemos ver el resultado en la siguiente captura:
+
+   ![Query 8](./images/exercise8.png)
+
+   Como se aprecia en la captura, se mantiene el tipo de dato array para *cast*.
+
+9. **Contar cuantos documentos (películas) tienen el array genres vacío.**
+
+   La query de este ejercicio es la siguiente: 
+
+   ```Javascript
+   var query_exercise_9_1 = { "genres": { $exists: true } }
+   var query_exercise_9_2 = { "genres": { $size: 0 }}
+   var query_exercise_9 = { $and: [query_exercise_9_1, query_exercise_9_2]}
+   db.movies.count(query_exercise_9)
+   ```
+   Con esta query el resultado obtenido es de 901 documentos con el array vacío. Podemos ver el resultado en la siguiente captura:
+
+   ![Query 9](./images/exercise9.png)
+
+10. **Actualizar TODOS los documentos (películas) que tengan el array genres vacío, añadiendo un nuevo elemento dentro del array con valor Undefined. Cuidado! El tipo de genres debe seguir siendo un array.**
+
+   La query de este ejercicio es la siguiente: 
+
+   ```Javascript
+   var query_exercise_10_1 = { "genres": { $exists: true } }
+   var query_exercise_10_2 = { "genres": { $size: 0 }}
+   var query_exercise_10 = { $and: [query_exercise_10_1, query_exercise_10_2]}
+   var action = { $push: { "genres": "Undefined" } }
+   db.movies.updateMany(query_exercise_10, action)
+   db.movies.find({genres: "Undefined"})
+   ```
+   Con esta query el resultado obtenido es que se actualizan 901 documentos con el array vacío poniendo el valor "Undefined". Podemos ver el resultado en la siguiente captura:
+
+   ![Query 10](./images/exercise10.png)
+
+   Como se aprecia en la captura, se mantiene el tipo de dato array para *genres*.
