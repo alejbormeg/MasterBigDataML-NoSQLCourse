@@ -160,3 +160,33 @@ A continuación, se presentan los ejercicios que explorarán las capacidades de 
 
    Obteniendo el resultado de un *array* vacío `[]`. Se puede ver en la siguiente captura: 
    ![Query 4-1](./images/exercise4-1.png)
+
+5. **Contar cuantas películas tienen actores (cast) que se llaman “and”. Estos nombres de actores están por ERROR**
+
+   La query de este ejercicio es la siguiente:
+
+   ```Javascript
+   var query_exercise_5 = { "cast": "and" }
+   db.movies.count(query_exercise_5)
+   ```
+
+   Con esta query estamos filtrando los documentos por aquellos que contienen al menos un "and" en el array del casting (cast) y haciendo un conteo de los documentos totales que cumplen esta condición, obteniendo un total de 93. Esto puede verse en la siguiente captura: 
+
+   ![Query 5](./images/exercise5.png)
+
+6. **Actualizar los documentos cuyo actor (cast) tenga por error el valor “and” como si realmente fuera un actor. Para ello, se debe sacar únicamente ese valor del array cast. Por lo tanto, no se debe eliminar ni el documento (película) ni su array cast con el resto de actores.**
+   La query de este ejercicio es la siguiente:
+
+   ```Javascript
+   var query_exercise_6 = { "cast": "and" }
+   var action = { $pull: { "cast": "and" } }
+   db.movies.updateMany(
+   query_exercise_6,
+   action
+   )
+   ```
+
+   En esta query, primero establecemos el criterio de la búsqueda con el primer parámetro de la función `updateMany` (en este caso los documentos que continenen "and" entre sus elementos del array *cast*). En segundo lugar, establecemos la operación a realizar (usamos la acción `$pull` de MongoDB para eliminar el valor "and" del array). Como vemos en la siguiente captura se han modificado los 93 valores anteriores.
+
+   ![Query 6](./images/exercise6.png)
+
