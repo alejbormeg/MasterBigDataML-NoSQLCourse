@@ -254,3 +254,78 @@ A continuación, se presentan los ejercicios que explorarán las capacidades de 
    ![Query 10](./images/exercise10.png)
 
    Como se aprecia en la captura, se mantiene el tipo de dato array para *genres*.
+
+11. **Mostrar el año más reciente / actual que tenemos sobre todas las películas**
+   La query de este ejercicio es la siguiente: 
+
+   ```Javascript
+   db.movies.find({}, {year: true, _id:false})
+   .sort({year: -1})
+   .limit(1)
+   ```
+   En primer lugar obtenemos todos los documentos de la colección con el filtro `{}`, en segundo lugar aplicamos la proyección `{year: true, _id:false}` que hace que solo se muestre el campo año y además (porque se muestra siempre por defecto) eliminamos el campo `_id` para obtener un resultado como el pedido.
+
+   Con esta query el resultado obtenido es el siguiente:
+   ```JSON
+   {
+	"year" : 2018
+   }
+   ```
+   Lo que indica que el año más reciente es 2018. A continuación se proporciona una captura de pantalla con la query y el resultado:
+   ![Query 11](./images/exercise11.png)
+
+12. **Contar cuántas películas han salido en los últimos 20 años. Debe hacerse desde el último año que se tienen registradas películas en la colección, mostrando el resultado total de esos años. Se debe hacer con el Framework de Agregación.**
+   El código de este ejercicio es el siguiente: 
+
+   ```Javascript
+   var maxYearDocument = db.movies.find({}, { year: true, _id: false }).sort({ year: -1 }).limit(1)
+   var maxYear
+   maxYearDocument.forEach(function (doc) {
+      maxYear = doc.year;
+   })
+   var minYear = maxYear - 20
+   var query_1 = {"year": { $gte: minYear}}
+   var query_2 = {"year": { $lte: maxYear}}
+   var query_3 = {$and: [query_1, query_2]}
+
+   db.movies.aggregate([
+      {$match: query_3},
+      {$group: {_id: 0, totalFilms: { $sum: 1 }}
+      }])
+   ```
+   En este ejercicio, primero tratamos de calcular dinámicamente el año máximo de la base de datos, para ello realizamos la query del ejercicio anterior, y teniendo en cuenta que *javascript* devuelve un *promise* como resultado de la búsqueda, para acceder al valor necesitamos ejecutar un *foreach* para setear el valor de la variable que representa el año máximo. En segundo lugar seteamos la variable que representa el año mínimo de la búsqueda (20 años menos) y realizamos la agregación. En primer lugar hacemos un match de los documentos con la fecha comprendida entre los valores deseados y luego un agrupamiento de los mismos, mandamos todos los documentos al mismo grupo (`_id : 0`) y sumamos la cantidad total de documentos.
+
+   Con esta query el resultado obtenido es el siguiente:
+   ```JSON
+   {
+	"_id" : null,
+	"totalFilms" : 5029
+   }
+   ```
+   La captura de pantalla del ejercicio es esta:
+   ![Query 12](./images/exercise12.png)
+
+13. **Contar cuántas películas han salido en la década de los 60 (del 60 al 69 incluidos). Se debe hacer con el Framework de Agregación**
+   El código de este ejercicio es el siguiente: 
+
+   ```Javascript
+   var query_1 = {"year": { $gte: 1960}}
+   var query_2 = {"year": { $lte: 1969}}
+   var query_3 = {$and: [query_1, query_2]}
+
+   db.movies.aggregate([
+      {$match: query_3},
+      {$group: {_id: 0, totalFilms: { $sum: 1 }}
+      }])
+   ```
+   En este realizamos algo similar al anterior, con la diferencia de que esta vez conocemos el rango de fechas sin necesidad de calcularlo dinámicamente. Por ello únicamente ejecutamos el pipeline de agregación anterior con el nuevo rango de fechas.
+
+   Con esta query el resultado obtenido es el siguiente:
+   ```JSON
+   {
+	"_id" : null,
+	"totalFilms" : 1414
+   }
+   ```
+   La captura de pantalla del ejercicio es esta:
+   ![Query 12](./images/exercise12.png)
