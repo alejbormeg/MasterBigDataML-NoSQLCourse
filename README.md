@@ -328,4 +328,285 @@ A continuación, se presentan los ejercicios que explorarán las capacidades de 
    }
    ```
    La captura de pantalla del ejercicio es esta:
-   ![Query 12](./images/exercise12.png)
+   ![Query 13](./images/exercise13.png)
+
+14. **Mostrar el año u años con más películas mostrando el número de películas de ese año. Revisar si varios años pueden compartir tener el mayor número de películas.**
+
+   El código de este ejercicio es el siguiente: 
+
+   ```Javascript
+   db.movies.aggregate([
+    { $group: { _id: "$year", totalFilms: { $sum: 1 } } },
+    { $group: { _id: "$totalFilms", years: { $push: "$_id" } }},
+    { $sort: { _id: -1 } },
+    { $limit: 1},
+    { 
+        $unwind: "$years" 
+    },
+    {
+        $replaceRoot: {
+            newRoot: {
+                _id: "$years",
+                pelis: "$_id"
+            }
+        }
+    },
+    {$sort: { _id: -1 }}
+   ]);
+   ```
+   En primer lugar agrupamos por año y contabilizamos el total de películas por año. Después agrupamos en función del total de películas y en los nuevos documentos incluimos un array de años en los que se hicieron esa cantidad de películas. Ordenamos de mayor a menor, de esta forma en el primer documento obtenemos el máximo de películas en un año así como en un array los años en que se hicieron esa cantidad de películas. Finalmente con `$unwind` creamos un nuevo documento por cada año en el array `years`. Finalmente reestructuramos los documentos añadiendo el año como `_id` y el total de pelis como el `_id` de los documentos previos a la transformación (dónde en el `_id` estaba el total de pelis de ese año). Finalmente, ordenamos descendentemente según el año. 
+
+   Con esta query el resultado obtenido es el siguiente:
+   ```JSON
+   {
+	"_id" : 1919,
+	"pelis" : 634
+   }
+   ```
+   Siendo 1919 el año con más películas en la base de datos, con un total de 634. La captura de pantalla del ejercicio es esta:
+   ![Query 14](./images/exercise14.png)
+
+15. **Mostrar el año u años con más películas mostrando el número de películas de ese año. Revisar si varios años pueden compartir tener el mayor número de películas.**
+
+   El código de este ejercicio es el siguiente: 
+
+   ```Javascript
+   db.movies.aggregate([
+    { $group: { _id: "$year", totalFilms: { $sum: 1 } } },
+    { $group: { _id: "$totalFilms", years: { $push: "$_id" } }},
+    { $sort: { _id: 1 } },
+    { $limit: 1},
+    { 
+        $unwind: "$years" 
+    },
+    {
+        $replaceRoot: {
+            newRoot: {
+                _id: "$years",
+                pelis: "$_id"
+            }
+        }
+    },
+    {$sort: { _id: -1 }}
+   ]);
+   ```
+   El razonamiento es idéntico al anterior pero ordenando los primeros grupos de menor a mayor por el total de películas en lugar de mayor a menor.
+
+   Con esta query el resultado obtenido es el siguiente:
+   ```JSON
+   /* 1 */
+   {
+      "_id" : 1907,
+      "pelis" : 7
+   },
+
+   /* 2 */
+   {
+      "_id" : 1906,
+      "pelis" : 7
+   },
+
+   /* 3 */
+   {
+      "_id" : 1902,
+      "pelis" : 7
+   }
+   ```
+   Siendo así 1907, 1906 y 1902 los años con menos películas de la base de datos con un total de 7. La captura de pantalla del ejercicio es esta:
+   ![Query 15](./images/exercise15.png)
+
+16. **Guardar en nueva colección llamada “actors” realizando la fase $unwind por actor. Después, contar cuantos documentos existen en la nueva colección.**
+
+   El código de este ejercicio es el siguiente: 
+
+   ```Javascript
+   db.movies.aggregate([
+    { $unwind: "$cast" },
+    { $project: {"_id": false}}
+    { $out: "actors"}
+   ]);
+
+   db.actors.count()
+   ```
+   Con esto en primer lugar realizamos un `unwind` para partir cada documento en tantos como actores haya en el array de cast. Tras esto eliminamos el `_id` de los documentos para evitar errores al crear la nueva colección. Finalmente contamos el total de actores, como se pide en la nueva colección, obteniendo 83224.
+
+   La captura de pantalla del ejercicio es esta:
+   ![Query 16](./images/exercise16.png)
+
+17. **Sobre actors (nueva colección), mostrar la lista con los 5 actores que han participado en más películas mostrando el número de películas en las que ha participado. Importante! Se necesita previamente filtrar para descartar aquellos actores llamados "Undefined". Aclarar que no se eliminan de la colección, sólo que filtramos para que no aparezcan.**
+
+   El código de este ejercicio es el siguiente: 
+
+   ```Javascript
+  db.actors.aggregate([
+    { $match: { cast: { $ne: "Undefined" } } },
+    { $group: { _id: "$cast", cuenta: { $sum: 1 } } },
+    { $sort: { cuenta: -1 } },
+    { $limit: 5 }
+   ]);
+   ```
+   Filtramos para eliminar los actores `Undefined`. Tras esto agrupamos por actor contando las películas en las que aparece. Finalmente ordenamos de mayor a menor y nos quedamos con las primeras 5. El resultado es el siguiente:
+
+   ```JSON
+      /* 1 */
+      {
+         "_id" : "Harold Lloyd",
+         "cuenta" : 190
+      },
+
+      /* 2 */
+      {
+         "_id" : "Hoot Gibson",
+         "cuenta" : 142
+      },
+
+      /* 3 */
+      {
+         "_id" : "John Wayne",
+         "cuenta" : 136
+      },
+
+      /* 4 */
+      {
+         "_id" : "Charles Starrett",
+         "cuenta" : 116
+      },
+
+      /* 5 */
+      {
+         "_id" : "Bebe Daniels",
+         "cuenta" : 103
+      }
+   ```
+
+   La captura de pantalla del ejercicio es esta:
+   ![Query 17](./images/exercise17.png)
+
+18. **Sobre actors (nueva colección), agrupar por película y año mostrando las 5 en las que más actores hayan participado, mostrando el número total de actores.**
+
+   El código de este ejercicio es el siguiente: 
+
+   ```Javascript
+  db.actors.aggregate([
+    { $match: { cast: { $ne: "Undefined" } } },
+    { $group: { _id: { title: "$title", year:"$year"}, cuenta: { $sum: 1 } } },
+    { $sort: { cuenta: -1 } },
+    { $limit: 5 }
+   ]);
+   ```
+   Filtramos para eliminar los actores `Undefined`. Tras esto agrupamos por película y año, contando las ocurrencias (que coinciden con el número de actores que participan, pues la collección surgió de hacer un `$unwind` sobre el campo cast). Finalmente ordenamos de mayor a menor y nos quedamos con las primeras 5 películas. El resultado es el siguiente: 
+
+   ```JSON
+   /* 1 */
+   {
+      "_id" : {
+         "title" : "The Twilight Saga: Breaking Dawn - Part 2",
+         "year" : 2012
+      },
+      "cuenta" : 35
+   },
+
+   /* 2 */
+   {
+      "_id" : {
+         "title" : "Anchorman 2: The Legend Continues",
+         "year" : 2013
+      },
+      "cuenta" : 33
+   },
+
+   /* 3 */
+   {
+      "_id" : {
+         "title" : "Cars 2",
+         "year" : 2011
+      },
+      "cuenta" : 32
+   },
+
+   /* 4 */
+   {
+      "_id" : {
+         "title" : "Avengers: Infinity War",
+         "year" : 2018
+      },
+      "cuenta" : 29
+   },
+
+   /* 5 */
+   {
+      "_id" : {
+         "title" : "Grown Ups 2",
+         "year" : 2013
+      },
+      "cuenta" : 28
+   }
+   ```
+
+   La captura de pantalla del ejercicio es esta:
+   ![Query 18](./images/exercise18.png)
+
+19. **Sobre actors (nueva colección), mostrar los 5 actores cuya carrera haya sido la más larga. Para ello, se debe mostrar cuándo comenzó su carrera, cuándo finalizó y cuántos años ha trabajado. Importante! Se necesita previamente filtrar para descartar aquellos actores llamados "Undefined".**
+
+   El código de este ejercicio es el siguiente: 
+
+   ```Javascript
+   db.actors.aggregate([
+    {$match: { cast: { $ne: "Undefined" } }},
+    {$group: { _id: "$cast", years: { $push: "$year" }}},
+    {
+        $project: {
+            comienza: { $min: "$years" },
+            termina: { $max: "$years" },
+            anos: { $subtract: [{ $max: "$years" }, { $min: "$years" }] }
+        }
+    },
+    { $sort: { anos: -1 } },
+    { $limit: 5 }
+   ]);
+   ```
+   Filtramos para eliminar los actores `Undefined`. Tras esto agrupamos por el nombre del actor y añadimos en una lista los años de las películas ordenados de menor a mayor. Tras esto componemos el objeto resultado con una proyección. El resultado es el siguiente:
+
+   ```JSON
+   /* 1 */
+   {
+      "_id" : "Harrison Ford",
+      "comienza" : 1919,
+      "termina" : 2017,
+      "anos" : 98
+   },
+
+   /* 2 */
+   {
+      "_id" : "Gloria Stuart",
+      "comienza" : 1932,
+      "termina" : 2012,
+      "anos" : 80
+   },
+
+   /* 3 */
+   {
+      "_id" : "Kenny Baker",
+      "comienza" : 1937,
+      "termina" : 2012,
+      "anos" : 75
+   },
+
+   /* 4 */
+   {
+      "_id" : "Lillian Gish",
+      "comienza" : 1912,
+      "termina" : 1987,
+      "anos" : 75
+   },
+
+   /* 5 */
+   {
+      "_id" : "Angela Lansbury",
+      "comienza" : 1944,
+      "termina" : 2018,
+      "anos" : 74
+   }
+   ```
+   La captura de pantalla del ejercicio es esta:
+   ![Query 19](./images/exercise19.png)
