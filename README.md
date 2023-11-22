@@ -610,3 +610,345 @@ A continuación, se presentan los ejercicios que explorarán las capacidades de 
    ```
    La captura de pantalla del ejercicio es esta:
    ![Query 19](./images/exercise19.png)
+
+20. **Sobre actors (nueva colección), Guardar en nueva colección llamada “genres” realizando la fase $unwind por genres. Después, contar cuantos documentos existen en la nueva colección.**
+   El código de este ejercicio es el siguiente: 
+
+   ```Javascript
+   db.actors.aggregate([
+    { $unwind: "$genres" },
+    { $project: {"_id": false}},
+    { $out: "genres"}
+   ]);
+
+   db.genres.count()
+   ```
+
+   El resultado de esta query es una nueva colección con 104950 documentos. La captura de pantalla del ejercicio es la siguiente:
+
+   ![Query 20](./images/exercise20.png)
+
+21. **Sobre genres (nueva colección), mostrar los 5 documentos agrupados por “Año y Género” que más número de películas diferentes tienen mostrando el número total de películas.**
+
+   El código de este ejercicio es el siguiente: 
+   ```Javascript
+   db.genres.aggregate([
+    { $match: { genres: { $ne: "Undefined" } } },
+    { $group: { _id: { year: "$year", genre: "$genres" }, uniqueTitles: { $addToSet: "$title" } } },
+    { $project: { pelis: { $size: "$uniqueTitles" } } },
+    { $sort: { pelis: -1 } },
+    { $limit: 5 }
+   ]);
+   ```
+
+   En primer lugar, se descartan los documentos con género `Undefined`. Tras esto agrupamos por año y género y utilizando un `$addToSet` metemos en una propiedad los títulos de ese año y género de forma que no haya repetidos. Finalmente con una proyección contamos el total de películas, ordenamos de mayor a menor y limitamos el número de documentos a devolver a 5. El resultado obtenido es el siguiente:
+
+   ```JSON
+   /* 1 */
+   {
+      "_id" : {
+         "year" : 1919,
+         "genre" : "Drama"
+      },
+      "pelis" : 291
+   },
+
+   /* 2 */
+   {
+      "_id" : {
+         "year" : 1925,
+         "genre" : "Drama"
+      },
+      "pelis" : 247
+   },
+
+   /* 3 */
+   {
+      "_id" : {
+         "year" : 1924,
+         "genre" : "Drama"
+      },
+      "pelis" : 233
+   },
+
+   /* 4 */
+   {
+      "_id" : {
+         "year" : 1919,
+         "genre" : "Comedy"
+      },
+      "pelis" : 226
+   },
+
+   /* 5 */
+   {
+      "_id" : {
+         "year" : 1922,
+         "genre" : "Drama"
+      },
+      "pelis" : 209
+   }
+   ```
+   
+   La captura de pantalla del ejercicio es la siguiente:
+
+   ![Query 21](./images/exercise21.png)
+
+22. **Sobre genres (nueva colección), mostrar los 5 actores y los géneros en los que han participado con más número de géneros diferentes, se debe mostrar el número de géneros diferentes que ha interpretado. Importante! Se necesita previamente filtrar para descartar aquellos actores llamados "Undefined".**
+
+   El código de este ejercicio es el siguiente: 
+   ```Javascript
+   db.genres.aggregate([
+    { $match: { cast: { $ne: "Undefined" } } },
+    { $match: { genres: { $ne: "Undefined" } } },
+    { $group: { _id: "$cast", generos: { $addToSet: "$genres" } } },
+    { $project: { numgeneros: { $size: "$generos" }, generos: 1 } },
+    { $sort: { numgeneros: -1} },
+    { $limit: 5 }
+   ]);
+   ```
+
+   En primer lugar filtramos para evitar el género y actor `Undefined`. Tras esto agrupamos por actor y creamos un conjunto de géneros para cada actor sin repetidos (con el `$addToSet`). Tras esto hacemos una proyección mostrando el conjunto de géneros y el total de elementos en el conjunto, ordenamos de mayor a menor y limitamos a 5. El resultado obtenido es el siguiente: 
+
+   ```JSON
+   /* 1 */
+   {
+      "_id" : "Dennis Quaid",
+      "generos" : [
+         "Fantasy",
+         "Disaster",
+         "Musical",
+         "Science Fiction",
+         "Adventure",
+         "Satire",
+         "Sports",
+         "Western",
+         "Action",
+         "Family",
+         "Thriller",
+         "Animated",
+         "Dance",
+         "Comedy",
+         "Romance",
+         "Drama",
+         "Biography",
+         "Suspense",
+         "Horror",
+         "Crime"
+      ],
+      "numgeneros" : 20
+   },
+
+   /* 2 */
+   {
+      "_id" : "James Mason",
+      "generos" : [
+         "Adventure",
+         "Fantasy",
+         "Musical",
+         "Science Fiction",
+         "War",
+         "Action",
+         "Western",
+         "Short",
+         "Thriller",
+         "Animated",
+         "Noir",
+         "Romance",
+         "Drama",
+         "Comedy",
+         "Biography",
+         "Suspense",
+         "Mystery",
+         "Crime"
+      ],
+      "numgeneros" : 18
+   },
+
+   /* 3 */
+   {
+      "_id" : "James Coburn",
+      "generos" : [
+         "Adventure",
+         "Spy",
+         "Science Fiction",
+         "War",
+         "Satire",
+         "Sports",
+         "Action",
+         "Western",
+         "Family",
+         "Thriller",
+         "Animated",
+         "Comedy",
+         "Romance",
+         "Drama",
+         "Biography",
+         "Suspense",
+         "Mystery",
+         "Crime"
+      ],
+      "numgeneros" : 18
+   },
+
+   /* 4 */
+   {
+      "_id" : "Gene Hackman",
+      "generos" : [
+         "Disaster",
+         "Adventure",
+         "Science Fiction",
+         "Spy",
+         "War",
+         "Sports",
+         "Action",
+         "Western",
+         "Thriller",
+         "Superhero",
+         "Animated",
+         "Comedy",
+         "Noir",
+         "Drama",
+         "Biography",
+         "Suspense",
+         "Mystery",
+         "Crime"
+      ],
+      "numgeneros" : 18
+   },
+
+   /* 5 */
+   {
+      "_id" : "Michael Caine",
+      "generos" : [
+         "Disaster",
+         "Crime",
+         "Spy",
+         "Science Fiction",
+         "War",
+         "Action",
+         "Family",
+         "Thriller",
+         "Superhero",
+         "Animated",
+         "Comedy",
+         "Romance",
+         "Drama",
+         "Biography",
+         "Suspense",
+         "Mystery",
+         "Horror",
+         "Adventure"
+      ],
+      "numgeneros" : 18
+   }
+   ```
+   La captura de pantalla del ejercicio es la siguiente:
+
+   ![Query 22](./images/exercise22.png)
+
+23. **Sobre genres (nueva colección), mostrar las 5 películas y su año correspondiente en los que más géneros diferentes han sido catalogados, mostrando esos géneros y el número de géneros que contiene.**
+   La query del ejercicio es la siguiente: 
+
+   ```Javascript
+   db.genres.aggregate([
+   { $match: { genres: { $ne: "Undefined" } } },
+   { $group: { _id: { year: "$year", title: "$title" }, generos: { $addToSet: "$genres" } } },
+   { $project: { numgeneros: { $size: "$generos" }, generos: true } },
+   { $sort: { numgeneros: -1 } },
+   { $limit: 5 }
+   ]);
+   ```
+   En primer lugar descartamos los que tienen género `Undefined`, tras esto agrupamos por título de película y año guardando en un conjunto los géneros catalogados para dicha película sin repetidos. Tras esto hacemos una proyección mostrando además el total de elementos en el conjunto. El resultado obtenido es el siguiente: 
+
+   ```JSON
+   /* 1 */
+   {
+      "_id" : {
+         "year" : 2017,
+         "title" : "American Made"
+      },
+      "generos" : [
+         "Action",
+         "Biography",
+         "Historical",
+         "Comedy",
+         "Thriller",
+         "Drama",
+         "Crime"
+      ],
+      "numgeneros" : 7
+   },
+
+   /* 2 */
+   {
+      "_id" : {
+         "year" : 2017,
+         "title" : "Thor: Ragnarok"
+      },
+      "generos" : [
+         "Comedy",
+         "Science Fiction",
+         "Superhero",
+         "Action",
+         "Adventure",
+         "Fantasy"
+      ],
+      "numgeneros" : 6
+   },
+
+   /* 3 */
+   {
+      "_id" : {
+         "year" : 2017,
+         "title" : "My Little Pony: The Movie"
+      },
+      "generos" : [
+         "Fantasy",
+         "Animated",
+         "Musical",
+         "Comedy",
+         "Family",
+         "Adventure"
+      ],
+      "numgeneros" : 6
+   },
+
+   /* 4 */
+   {
+      "_id" : {
+         "year" : 2017,
+         "title" : "The Dark Tower"
+      },
+      "generos" : [
+         "Western",
+         "Science Fiction",
+         "Action",
+         "Adventure",
+         "Fantasy",
+         "Horror"
+      ],
+      "numgeneros" : 6
+   },
+
+   /* 5 */
+   {
+      "_id" : {
+         "year" : 2017,
+         "title" : "Dunkirk"
+      },
+      "generos" : [
+         "Action",
+         "Adventure",
+         "Thriller",
+         "Historical",
+         "Drama",
+         "War"
+      ],
+      "numgeneros" : 6
+   }
+   ```
+
+   La captura de pantalla del ejercicio es la siguiente:
+
+   ![Query 23](./images/exercise23.png)
