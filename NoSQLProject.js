@@ -85,7 +85,7 @@ var query_3 = {$and: [query_1, query_2]}
 
 db.movies.aggregate([
     {$match: query_3},
-    {$group: {_id: null, totalFilms: { $sum: 1 }}
+    {$group: {_id: null, total: { $sum: 1 }}
     }])
 
 // Ejercicio 13
@@ -95,7 +95,7 @@ var query_3 = {$and: [query_1, query_2]}
 
 db.movies.aggregate([
     {$match: query_3},
-    {$group: {_id: null, totalFilms: { $sum: 1 }}
+    {$group: {_id: null, total: { $sum: 1 }}
     }])
     
 // Ejercicio 14
@@ -214,3 +214,33 @@ db.genres.aggregate([
 { $sort: { numgeneros: -1 } },
 { $limit: 5 }
 ]);
+
+// Ejercicio 24
+db.genres.aggregate([
+    { $match: { genres: "Drama", cast: { $ne: "Undefined" } } },
+    { $group: { _id: "$cast", peliculas: { $addToSet: "$title" } } },
+    { $project: { numpeliculas: { $size: "$peliculas" }, peliculas: 1 } },
+    { $sort: { numpeliculas: -1} },
+    { $limit: 3 }
+   ]);
+   
+// Ejercicio 25
+db.genres.aggregate([
+  { $match: { genres: { $ne: "Undefined" } } },
+  { $group: { _id: { genre: "$genres", year: "$year" }, peliculas: { $addToSet: "$title" } } },
+  { $project: { numpeliculas: { $size: "$peliculas" }}},
+  { $sort: { numpeliculas: -1 } },
+  { $group: { _id: "$_id.genre", anoModa: { $first: "$_id.year" }, numPelisModa: { $first: "$numpeliculas" } } },
+  { $project: { _id: 0, genre: "$_id", anoModa: 1, numPelisModa: 1 } },
+  { $sort: { numPelisModa: -1 } }
+])
+
+// Ejercicio 26
+db.genres.aggregate([
+    { $match: { genres: { $ne: "Undefined" } } },
+    { $group: { _id: { year: "$year", title: "$title" }, uniqueGenres: { $addToSet: "$genres" } } },
+    { $group: { _id: "$_id.year", totalMovies: { $sum: 1 }, totalGenres: { $sum: { $size: "$uniqueGenres" } } } },
+    { $project: { _id: 0, year: "$_id", promedioGenresPerMovie: { $divide: ["$totalGenres", "$totalMovies"] } } },
+    { $sort: { promedioGenresPerMovie: -1 } },
+    { $limit: 5 }
+])

@@ -298,8 +298,8 @@ A continuación, se presentan los ejercicios que explorarán las capacidades de 
    Con esta query el resultado obtenido es el siguiente:
    ```JSON
    {
-	"_id" : null,
-	"totalFilms" : 5029
+      "_id" : null,
+      "total" : 5029
    }
    ```
    La captura de pantalla del ejercicio es esta:
@@ -323,8 +323,8 @@ A continuación, se presentan los ejercicios que explorarán las capacidades de 
    Con esta query el resultado obtenido es el siguiente:
    ```JSON
    {
-	"_id" : null,
-	"totalFilms" : 1414
+      "_id" : null,
+      "total" : 1414
    }
    ```
    La captura de pantalla del ejercicio es esta:
@@ -428,7 +428,7 @@ A continuación, se presentan los ejercicios que explorarán las capacidades de 
 
    db.actors.count()
    ```
-   Con esto en primer lugar realizamos un `unwind` para partir cada documento en tantos como actores haya en el array de cast. Tras esto eliminamos el `_id` de los documentos para evitar errores al crear la nueva colección. Finalmente contamos el total de actores, como se pide en la nueva colección, obteniendo 83224.
+   Con esto en primer lugar realizamos un `unwind` para partir cada documento en tantos como actores haya en el array de cast. Tras esto eliminamos el `_id` de los documentos para evitar errores al crear la nueva colección. Finalmente contamos el total de actores, como se pide en la nueva colección, obteniendo 83224 documentos.
 
    La captura de pantalla del ejercicio es esta:
    ![Query 16](./images/exercise16.png)
@@ -952,3 +952,310 @@ A continuación, se presentan los ejercicios que explorarán las capacidades de 
    La captura de pantalla del ejercicio es la siguiente:
 
    ![Query 23](./images/exercise23.png)
+
+
+24. **Obtén los 3 actores que más de películas de género *Drama* han realizado.**
+   La query de este ejercicio es la siguiente:
+   ```Javascript
+   db.genres.aggregate([
+    { $match: { genres: "Drama", cast: { $ne: "Undefined" } } },
+    { $group: { _id: "$cast", peliculas: { $addToSet: "$title" } } },
+    { $project: { numpeliculas: { $size: "$peliculas" }, peliculas: 1 } },
+    { $sort: { numpeliculas: -1} },
+    { $limit: 3 }
+   ]);
+   ```
+
+   En primer lugar hacemos match para tomar aquellas películas de género *Drama* que no tengan como actor ningún *Undefined*. En segundo lugar agrupamos por actor y creamos un set con las películas realizadas con género *Drama*. Finalmente proyectamos por el campo de total de películas y agregamos un conteo del total de películas en el set. Ordenamos de mayor a menor por este campo y tomamos los 3 primeros.
+
+   El resultado obtenido es el siguiente: 
+   ```JSON
+   /* 1 */
+   {
+      "_id" : "Bette Davis",
+      "peliculas" : [
+         "Hell's House",
+         "Bordertown",
+         "Beyond the Forest",
+         "Jezebel",
+         "The Dark Horse",
+         "That Certain Woman",
+         "Storm Center",
+         "Where Love Has Gone",
+         "Mr. Skeffington",
+         "Front Page Woman",
+         "The Cabin in the Cotton",
+         "Bureau of Missing Persons",
+         "The Petrified Forest",
+         "20,000 Years in Sing Sing",
+         "All About Eve",
+         "The Little Foxes",
+         "Old Acquaintance",
+         "Another Man's Poison",
+         "Parachute Jumper",
+         "Of Human Bondage",
+         "A Stolen Life",
+         "The Star",
+         "Satan Met a Lady",
+         "Three on a Match",
+         "The Big Shakedown",
+         "Phone Call from a Stranger",
+         "The Man Who Played God",
+         "The Private Lives of Elizabeth and Essex",
+         "Wicked Stepmother",
+         "Payment on Demand",
+         "Special Agent",
+         "In This Our Life",
+         "The Girl from 10th Avenue",
+         "Marked Woman",
+         "The Old Maid",
+         "Jimmy the Gent",
+         "Watch on the Rhine",
+         "The Corn Is Green",
+         "Dark Victory",
+         "The Catered Affair",
+         "The Sisters",
+         "The Whales of August",
+         "Dangerous",
+         "Fashions of 1934",
+         "The Scapegoat",
+         "Kid Galahad",
+         "Housewife",
+         "Now, Voyager",
+         "The Great Lie",
+         "Waterloo Bridge",
+         "Way Back Home",
+         "Winter Meeting",
+         "All This, and Heaven Too",
+         "Bad Sister",
+         "Fog Over Frisco",
+         "The Golden Arrow"
+      ],
+      "numpeliculas" : 56
+   },
+
+   /* 2 */
+   {
+      "_id" : "Lionel Barrymore",
+      "peliculas" : [
+         "The Girl Who Wouldn't Work",
+         "Sadie Thompson",
+         "The Show",
+         "The Yellow Ticket",
+         "Oil and Water",
+         "The Copperhead",
+         "A Man of Iron",
+         "Broken Lullaby",
+         "Rasputin and the Empress",
+         "The Little Colonel",
+         "The Secret of Dr. Kildare",
+         "Three Wise Fools",
+         "I Am the Man",
+         "Paris at Midnight",
+         "The Penalty",
+         "Bannerline",
+         "The Voice of Bugle Ann",
+         "One Man's Journey",
+         "Captains Courageous",
+         "Guilty Hands",
+         "The Road to Glory",
+         "Night Flight",
+         "The Return of Peter Grimm",
+         "This Side of Heaven",
+         "Saratoga",
+         "Young Dr. Kildare",
+         "The Eternal City",
+         "3 Men in White",
+         "A Free Soul",
+         "The Barrier",
+         "Children of the Whirlwind",
+         "The Lion and the Mouse",
+         "Unseeing Eyes",
+         "Dr. Gillespie's Criminal Case",
+         "A Family Affair",
+         "West of Zanzibar",
+         "The Washington Masquerade",
+         "Sweepings",
+         "The Gorgeous Hussy",
+         "Jim the Penman",
+         "Meddling Women",
+         "Calling Dr. Gillespie",
+         "Public Hero No. 1",
+         "Camille",
+         "Road House",
+         "Mata Hari",
+         "The Wrongdoers",
+         "Ah, Wilderness!",
+         "Fifty-Fifty",
+         "Three Friends",
+         "Carolina",
+         "Dark Delusion",
+         "Dr. Gillespie's New Assistant",
+         "Looking Forward",
+         "Calling Dr. Kildare"
+      ],
+      "numpeliculas" : 55
+   },
+
+   /* 3 */
+   {
+      "_id" : "Mary Astor",
+      "peliculas" : [
+         "Young Ideas",
+         "Upper World",
+         "The Sin Ship",
+         "Claudia and David",
+         "A Stranger in My Arms",
+         "The Lash",
+         "Straight from the Heart",
+         "Red Dust",
+         "The Price of a Party",
+         "Man of Iron",
+         "Puritan Passions",
+         "Other Men's Women",
+         "Scarlet Saint",
+         "The Pace That Thrills",
+         "Inez from Hollywood",
+         "Dodsworth",
+         "The Woman from Hell",
+         "Unguarded Women",
+         "Woman Against Woman",
+         "Behind Office Doors",
+         "Youngblood Hawke",
+         "New Year's Eve",
+         "Enticement",
+         "Three-Ring Marriage",
+         "The Lost Squadron",
+         "Playing with Souls",
+         "Jennie Gerhardt",
+         "The Man with Two Faces",
+         "Second Fiddle",
+         "Viva Villa!",
+         "Act of Violence",
+         "Dinky",
+         "Cynthia",
+         "Men of Chance",
+         "Any Number Can Play",
+         "Forever After",
+         "Dressed to Kill",
+         "Smart Woman",
+         "The Bright Shawl",
+         "The Runaway Bride",
+         "The Great Lie",
+         "Blonde Fever",
+         "Romance of the Underworld",
+         "Trapped by Television",
+         "White Shoulders",
+         "The Fighting Adventurer",
+         "Those We Love",
+         "I Am a Thief",
+         "The World Changes",
+         "High Steppers"
+      ],
+      "numpeliculas" : 50
+   }
+   ```
+
+   La captura de pantalla del ejercicio es la siguiente: 
+   ![Query 24](./images/exercise24.png)
+
+25.**Obtén para cada género el año en que más películas se hicieron de dicho género (la moda).**
+   La query de este ejercicio es la siguiente:
+
+   ```Javascript
+   db.genres.aggregate([
+      { $match: { genres: { $ne: "Undefined" } } },
+      { $group: { _id: { genre: "$genres", year: "$year" }, peliculas: { $addToSet: "$title" } } },
+      { $project: { numpeliculas: { $size: "$peliculas" }}},
+      { $sort: { numpeliculas: -1 } },
+      { $group: { _id: "$_id.genre", anoModa: { $first: "$_id.year" }, numPelisModa: { $first: "$numpeliculas" } } },
+      { $project: { _id: 0, genre: "$_id", anoModa: 1, numPelisModa: 1 } },
+      { $sort: { numPelisModa: -1 } }
+   ])
+   ```
+
+   Primero filtramos por entradas con género distinto de "Undefined". Luego agrupamos por género y año los documentos añadiendo en un set sin elementos repetidos todas las películas de ese género y año. En una proyección, añadimos un campo para obtener el total de películas del set. Después ordenamos de mayor a menor de acuerdo con este nuevo campo. Agrupamos esta vez por género, y en el año que representa la moda usamos `$first` para obtener el año del primer documento de cada género (que como estaba ordenado en función del número de películas sabemos que es el que más películas tiene). Finalmente proyectamos el resultado para una lectura más amigable de los documentos, mostrando el género, año de la moda y número de películas. El resultado es el siguiente: 
+
+   ```JSON
+   /* 1 */
+   {
+      "anoModa" : 1919,
+      "numPelisModa" : 291,
+      "genre" : "Drama"
+   },
+
+   /* 2 */
+   {
+      "anoModa" : 1919,
+      "numPelisModa" : 226,
+      "genre" : "Comedy"
+   },
+
+   /* 3 */
+   {
+      "anoModa" : 1925,
+      "numPelisModa" : 120,
+      "genre" : "Western"
+   },
+   ...
+   ```
+
+   El resultado se puede ver en la siguiente captura: 
+   ![Query 25](./images/exercise25.png)
+
+26. **Calcula el promedio de géneros por película en cada año y ordena el resultado de mayor a menor promedio.**
+
+   La query es la siguiente:
+
+   ```Javascript
+   db.genres.aggregate([
+      { $match: { genres: { $ne: "Undefined" } } },
+      { $group: { _id: { year: "$year", title: "$title" }, uniqueGenres: { $addToSet: "$genres" } } },
+      { $group: { _id: "$_id.year", totalMovies: { $sum: 1 }, totalGenres: { $sum: { $size: "$uniqueGenres" } } } },
+      { $project: { _id: 0, year: "$_id", averageGenresPerMovie: { $divide: ["$totalGenres", "$totalMovies"] } } },
+      { $sort: { averageGenresPerMovie: -1 } }
+      { $limit: 5 }
+   ])
+   ```
+   En primer lugar, filtramos por aquellos documentos con género distinto a `Undefined`. Después agrupamos por película y año, añadiendo para cada pareja película, año un set con los géneros. Tras esto agrupamos por año asumando el total de películas y el total de géneros. Finalmente proyectamos para una salida más legible y calculamos el promedio de géneros, ordenamos por el promedio de géneros de mayora a menor y nos quedamos con los primeros 5 valores.
+
+   El resultado obtenido es el siguiente: 
+   ```JSON
+   /* 1 */
+   {
+      "year" : 2017,
+      "promedioGenresPerMovie" : 2.2941176470588234
+   },
+
+   /* 2 */
+   {
+      "year" : 2018,
+      "promedioGenresPerMovie" : 2.01271186440678
+   },
+
+   /* 3 */
+   {
+      "year" : 1906,
+      "promedioGenresPerMovie" : 1.8571428571428572
+   },
+
+   /* 4 */
+   {
+      "year" : 1902,
+      "promedioGenresPerMovie" : 1.75
+   },
+
+   /* 5 */
+   {
+      "year" : 2011,
+      "promedioGenresPerMovie" : 1.7313432835820894
+   }
+   ```
+
+   Como podemos ver el año con mayor número de géneros por película fue 2017 con más de 2 géneros por película de media.
+
+   La captura de pantalla de este ejercicio se muestra a continuación:
+
+   
+   El resultado se puede ver en la siguiente captura: 
+   ![Query 26](./images/exercise26.png)
