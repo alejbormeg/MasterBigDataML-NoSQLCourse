@@ -79,7 +79,7 @@ maxYearDocument.forEach(function (doc) {
     maxYear = doc.year;
 })
 var minYear = maxYear - 20
-var query_1 = {"year": { $gte: minYear}}
+var query_1 = {"year": { $gt: minYear}}
 var query_2 = {"year": { $lte: maxYear}}
 var query_3 = {$and: [query_1, query_2]}
 

@@ -284,7 +284,7 @@ A continuación, se presentan los ejercicios que explorarán las capacidades de 
       maxYear = doc.year;
    })
    var minYear = maxYear - 20
-   var query_1 = {"year": { $gte: minYear}}
+   var query_1 = {"year": { $gt: minYear}}
    var query_2 = {"year": { $lte: maxYear}}
    var query_3 = {$and: [query_1, query_2]}
 
@@ -293,13 +293,13 @@ A continuación, se presentan los ejercicios que explorarán las capacidades de 
       {$group: {_id: 0, totalFilms: { $sum: 1 }}
       }])
    ```
-   En este ejercicio, primero tratamos de calcular dinámicamente el año máximo de la base de datos, para ello realizamos la query del ejercicio anterior, y teniendo en cuenta que *javascript* devuelve un *promise* como resultado de la búsqueda, para acceder al valor necesitamos ejecutar un *foreach* para setear el valor de la variable que representa el año máximo. En segundo lugar seteamos la variable que representa el año mínimo de la búsqueda (20 años menos) y realizamos la agregación. En primer lugar hacemos un match de los documentos con la fecha comprendida entre los valores deseados y luego un agrupamiento de los mismos, mandamos todos los documentos al mismo grupo (`_id : 0`) y sumamos la cantidad total de documentos.
+   En este ejercicio, primero tratamos de calcular dinámicamente el año máximo de la base de datos, para ello realizamos la query del ejercicio anterior, y teniendo en cuenta que *javascript* devuelve un *promise* como resultado de la búsqueda, para acceder al valor necesitamos ejecutar un *foreach* para setear el valor de la variable que representa el año máximo. En segundo lugar seteamos la variable que representa el año mínimo de la búsqueda (20 años menos) y realizamos la agregación. En primer lugar hacemos un match de los documentos con la fecha comprendida entre los valores deseados (para las *query1* usamos `$gt` y no `$gte` pues estaríamos incluyendo 21 años entonces) y luego un agrupamiento de los mismos, mandamos todos los documentos al mismo grupo (`_id : 0`) y sumamos la cantidad total de documentos.
 
    Con esta query el resultado obtenido es el siguiente:
    ```JSON
    {
       "_id" : null,
-      "total" : 5029
+      "total" : 4787
    }
    ```
    La captura de pantalla del ejercicio es esta:
